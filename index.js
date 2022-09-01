@@ -15,12 +15,12 @@ global.AbortController = AbortController
     CosmJS
  */
 const mnemonic = process.env.MNEMONIC;
-console.log(process.env.MNEMONIC)
-const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic);
+const DENOM = process.env.DENOM;
+const prefix = {prefix: process.env.PREFIX}
+const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, prefix);
 const [firstAccount] = await wallet.getAccounts();
-
 const rpcEndpoint = process.env.ENDPOINT;
-const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet);
+const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, prefix);
 const nois_contract = process.env.NOIS_CONTRACT;
 
 /*
@@ -36,6 +36,7 @@ const urls = [
 ]
 
 async function start (){
+
     const options = { chainHash }
     const client = await Client.wrap(HTTP.forURLs(urls, chainHash), options)
 
@@ -70,7 +71,7 @@ async function start (){
                 })
             }
             const fee = {
-                amount: coins(2000, "unois"),
+                amount: coins(25000, DENOM),
                 gas: "1000000", // 1M
             };
             const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], fee, `Insert randomness round: ${res.round}`)
