@@ -16,12 +16,12 @@ global.AbortController = AbortController
  */
 const mnemonic = process.env.MNEMONIC;
 const DENOM = process.env.DENOM;
-console.log(process.env.MNEMONIC)
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic);
 const [firstAccount] = await wallet.getAccounts();
 
 const rpcEndpoint = process.env.ENDPOINT;
-const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet);
+const prefix = {prefix: process.env.DENOM}
+const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, prefix);
 const nois_contract = process.env.NOIS_CONTRACT;
 
 /*
@@ -37,6 +37,7 @@ const urls = [
 ]
 
 async function start (){
+
     const options = { chainHash }
     const client = await Client.wrap(HTTP.forURLs(urls, chainHash), options)
 
