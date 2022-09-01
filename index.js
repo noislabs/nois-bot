@@ -1,11 +1,12 @@
+require('dotenv').config()
 import Client, { HTTP } from 'drand-client'
 import fetch from 'node-fetch'
 import AbortController from 'abort-controller'
-import { SigningCosmWasmClient, MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import {DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 
 global.fetch = fetch
 global.AbortController = AbortController
@@ -14,6 +15,7 @@ global.AbortController = AbortController
     CosmJS
  */
 const mnemonic = process.env.MNEMONIC;
+console.log(process.env.MNEMONIC)
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic);
 const [firstAccount] = await wallet.getAccounts();
 
