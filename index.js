@@ -16,7 +16,7 @@ global.AbortController = AbortController
  */
 const mnemonic = process.env.MNEMONIC;
 const DENOM = process.env.DENOM;
-const prefix = {prefix: process.env.DENOM}
+const prefix = {prefix: process.env.PREFIX}
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, prefix);
 const [firstAccount] = await wallet.getAccounts();
 const rpcEndpoint = process.env.ENDPOINT;
