@@ -37,8 +37,8 @@ const urls = [
 
 async function start (){
 
-    const options = { chainHash }
-    const client = await Client.wrap(HTTP.forURLs(urls, chainHash), options)
+    const drand_options= { chainHash }
+    const client = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options)
 
     for await (const res of client.watch()) {
         /*
