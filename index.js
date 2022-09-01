@@ -1,7 +1,8 @@
 import Client, { HTTP } from 'drand-client'
 import fetch from 'node-fetch'
 import AbortController from 'abort-controller'
-import { assertIsBroadcastTxSuccess, SigningStargateClient, StargateClient } from "@cosmjs/stargate";
+import { SigningCosmWasmClient, MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import {DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 
 global.fetch = fetch
 global.AbortController = AbortController
@@ -14,7 +15,7 @@ const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic);
 const [firstAccount] = await wallet.getAccounts();
 
 const rpcEndpoint = process.env.ENDPOINT;
-const signer = await SigningStargateClient.connectWithSigner(rpcEndpoint, wallet);
+const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet);
 
 const recipient = process.env.RECIPIENT;
 
@@ -45,8 +46,18 @@ async function start (){
             Use res.randomness to insert randomness
          */
         try {
-            const result = await signer.signAndBroadcast(firstAccount.address, [], "auto", "Insert drand")
-            assertIsBroadcastTxSuccess(result);
+
+            const sendMsg =  {
+                typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+                value: {
+                    fromAddress: firstAccount,
+                    toAddress: process.env.RECIPIENT,
+                    msg: "",
+                }
+            }
+            const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], "auto", "Insert drand")
+            console.log(result)
+
         }catch (e) {
             console.log(e)
         }

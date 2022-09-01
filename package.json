@@ -7,7 +7,8 @@
   "license": "Apache-2.0",
   "private": true,
   "dependencies": {
-    "@cosmjs/stargate": "^0.28.13",
+    "@cosmjs/cosmwasm-stargate": "^0.28.13",
+    "@cosmjs/proto-signing": "^0.28.13",
     "abort-controller": "^3.0.0",
     "drand-client": "^0.2.0",
     "node-fetch": "^3.2.10"
