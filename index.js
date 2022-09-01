@@ -21,8 +21,7 @@ const [firstAccount] = await wallet.getAccounts();
 
 const rpcEndpoint = process.env.ENDPOINT;
 const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet);
-
-const recipient = process.env.RECIPIENT;
+const nois_contract = process.env.NOIS_CONTRACT;
 
 /*
     DRAND
@@ -64,7 +63,7 @@ async function start (){
                 typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
                 value: MsgExecuteContract.fromPartial({
                     sender: firstAccount.address,
-                    contract: process.env.RECIPIENT,
+                    contract: nois_contract,
                     msg: toUtf8(JSON.stringify(msg)),
                 })
             }
