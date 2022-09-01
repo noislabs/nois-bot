@@ -15,6 +15,7 @@ global.AbortController = AbortController
     CosmJS
  */
 const mnemonic = process.env.MNEMONIC;
+const DENOM = process.env.DENOM;
 console.log(process.env.MNEMONIC)
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic);
 const [firstAccount] = await wallet.getAccounts();
@@ -70,7 +71,7 @@ async function start (){
                 })
             }
             const fee = {
-                amount: coins(2000, "unois"),
+                amount: coins(2000, DENOM),
                 gas: "1000000", // 1M
             };
             const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], fee, `Insert randomness round: ${res.round}`)
