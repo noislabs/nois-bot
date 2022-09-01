@@ -29,6 +29,8 @@ const nois_contract = process.env.NOIS_CONTRACT;
 const chainHash = process.env.CHAIN_HASH // (hex encoded)
 const urls = [
     'https://api.drand.sh',
+    'https://api2.drand.sh',
+    'https://api3.drand.sh',
     'https://drand.cloudflare.com'
     // ...
 ]
