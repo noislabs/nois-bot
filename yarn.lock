@@ -50,7 +50,7 @@
     elliptic "^6.5.3"
     libsodium-wrappers "^0.7.6"
 
-"@cosmjs/encoding@0.28.13":
+"@cosmjs/encoding@0.28.13", "@cosmjs/encoding@^0.28.13":
   version "0.28.13"
   resolved "https://registry.yarnpkg.com/@cosmjs/encoding/-/encoding-0.28.13.tgz#7994e8e2c435beaf0690296ffb0f7f3eaec8150b"
   integrity sha512-jtXbAYtV77rLHxoIrjGFsvgGjeTKttuHRv6cvuy3toCZzY7JzTclKH5O2g36IIE4lXwD9xwuhGJ2aa6A3dhNkA==
@@ -97,7 +97,7 @@
     ws "^7"
     xstream "^11.14.0"
 
-"@cosmjs/stargate@0.28.13":
+"@cosmjs/stargate@0.28.13", "@cosmjs/stargate@^0.28.13":
   version "0.28.13"
   resolved "https://registry.yarnpkg.com/@cosmjs/stargate/-/stargate-0.28.13.tgz#a73d837a46ee8944e6eafe162f2ff6943c14350e"
   integrity sha512-dVBMazDz8/eActHsRcZjDHHptOBMqvibj5CFgEtZBp22gP6ASzoAUXTlkSVk5FBf4sfuUHoff6st134/+PGMAg==
@@ -254,6 +254,14 @@ cosmjs-types@^0.4.0:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/cosmjs-types/-/cosmjs-types-0.4.1.tgz#3b2a53ba60d33159dd075596ce8267cfa7027063"
   integrity sha512-I7E/cHkIgoJzMNQdFF0YVqPlaTqrqKHrskuSTIqlEyxfB5Lf3WKCajSXVK2yHOfOFfSux/RxEdpMzw/eO4DIog==
+  dependencies:
+    long "^4.0.0"
+    protobufjs "~6.11.2"
+
+cosmjs-types@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/cosmjs-types/-/cosmjs-types-0.5.1.tgz#f9bc35e78c32b687fb6018dc573eb454b3ae2587"
+  integrity sha512-NcC58xUIVLlKdIimWWQAmSlmCjiMrJnuHf4i3LiD8PCextfHR0fT3V5/WlXZZreyMgdmh6ML1zPUfGTbbo3Z5g==
   dependencies:
     long "^4.0.0"
     protobufjs "~6.11.2"

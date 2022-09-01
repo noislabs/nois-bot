@@ -2,7 +2,10 @@ import Client, { HTTP } from 'drand-client'
 import fetch from 'node-fetch'
 import AbortController from 'abort-controller'
 import { SigningCosmWasmClient, MsgExecuteContractEncodeObject } from "@cosmjs/cosmwasm-stargate";
+import { assertIsDeliverTxSuccess } from "@cosmjs/stargate";
 import {DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx";
 
 global.fetch = fetch
 global.AbortController = AbortController
@@ -47,17 +50,24 @@ async function start (){
          */
         try {
 
-            const sendMsg =  {
-                typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-                value: {
-                    fromAddress: firstAccount,
-                    toAddress: process.env.RECIPIENT,
-                    msg: "",
+            const msg = {
+                add_round: {
+                    round: res.round,
+                    signature: res.signature,
+                    previous_signature: res.previous_signature
                 }
             }
-            const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], "auto", "Insert drand")
-            console.log(result)
 
+            const sendMsg =  {
+                typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+                value: MsgExecuteContract.fromPartial({
+                    sender: firstAccount.address,
+                    contract: process.env.RECIPIENT,
+                    msg: toUtf8(JSON.stringify(msg)),
+                })
+            }
+            const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], "auto", "Insert randomness")
+            assertIsDeliverTxSuccess(result)
         }catch (e) {
             console.log(e)
         }
