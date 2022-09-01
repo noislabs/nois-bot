@@ -1,0 +1,16 @@
+{
+  "name": "nois-bot",
+  "version": "1.0.0",
+  "description": "Nois bot bridge offchain and onchain Drand rounds to Nois.network contract",
+  "main": "index.js",
+  "author": "0xantman",
+  "license": "Apache-2.0",
+  "private": true,
+  "dependencies": {
+    "@cosmjs/stargate": "^0.28.13",
+    "abort-controller": "^3.0.0",
+    "drand-client": "^0.2.0",
+    "node-fetch": "^3.2.10"
+  },
+  "type": "module"
+}
