@@ -71,7 +71,7 @@ async function start (){
                 })
             }
             const fee = {
-                amount: coins(2000, DENOM),
+                amount: coins(25000, DENOM),
                 gas: "1000000", // 1M
             };
             const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], fee, `Insert randomness round: ${res.round}`)
