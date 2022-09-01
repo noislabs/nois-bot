@@ -69,7 +69,8 @@ async function start (){
                     msg: toUtf8(JSON.stringify(msg)),
                 })
             }
-            const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], "auto", `Insert randomness round: ${res.round}`)
+
+            const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], 1_000_000, `Insert randomness round: ${res.round}`)
             assertIsDeliverTxSuccess(result)
         }catch (e) {
             console.log(e)
