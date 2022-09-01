@@ -17,15 +17,11 @@ const rpcEndpoint = process.env.ENDPOINT;
 const signer = await SigningStargateClient.connectWithSigner(rpcEndpoint, wallet);
 
 const recipient = process.env.RECIPIENT;
-// const amount = {
-//     denom: "",
-//     amount: "",
-// };
 
 /*
     DRAND
  */
-const chainHash = '8990e7a9aaed2ffed73dbd7092123d6f289930540d7651336225dc172e51b2ce' // (hex encoded)
+const chainHash = process.env.CHAIN_HASH // (hex encoded)
 const urls = [
     'https://api.drand.sh',
     'https://drand.cloudflare.com'
