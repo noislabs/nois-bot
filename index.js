@@ -75,7 +75,8 @@ async function start (){
                 gas: "1000000", // 1M
             };
             const result = await signer.signAndBroadcast(firstAccount.address, [sendMsg], fee, `Insert randomness round: ${res.round}`)
-            assertIsDeliverTxSuccess(result)
+            const tx_result = assertIsDeliverTxSuccess(result)
+            console.info(tx_result)
         }catch (e) {
             console.log(e)
         }
