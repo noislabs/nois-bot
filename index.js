@@ -3,7 +3,7 @@ import Client, { HTTP } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { assertIsDeliverTxSuccess, coins } from "@cosmjs/stargate";
+import { assertIsDeliverTxSuccess, calculateFee, coins, GasPrice } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
@@ -85,10 +85,8 @@ async function start() {
           msg: toUtf8(JSON.stringify(msg)),
         }),
       };
-      const fee = {
-        amount: coins(25000, denom),
-        gas: "1000000", // 1M
-      };
+      const gasPrice = GasPrice.fromString(`0.025${denom}`);
+      const fee = calculateFee(700_000, gasPrice);
       console.info(`Submitting drand round ${res.round} ...`);
       const result = await signer.signAndBroadcast(
         firstAccount.address,
