@@ -26,9 +26,9 @@ const mnemonic = await (async () => {
     const [account] = await wallet.getAccounts();
     const address = account.address;
     console.log(`Generated new mnemonic: ${newMnemonic} and address ${address}`);
-    const faucet = new FaucetClient(
-      "http://5rh6rhqad1cgvei7qc96ia3n74.ingress.bigtractorplotting.com/",
-    );
+    const faucetEndpoint = process.env.FAUCET_ENDPOINT;
+    if (!faucetEndpoint) throw new Error("Either MNEMONIC of FAUCET_ENDPOINT need to be set.");
+    const faucet = new FaucetClient(faucetEndpoint);
     await faucet.credit(address, denom);
     return newMnemonic;
   }
