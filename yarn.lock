@@ -59,6 +59,13 @@
     bech32 "^1.1.4"
     readonly-date "^1.0.0"
 
+"@cosmjs/faucet-client@^0.28.13":
+  version "0.28.13"
+  resolved "https://registry.yarnpkg.com/@cosmjs/faucet-client/-/faucet-client-0.28.13.tgz#0de75edbb997c852a62003f07c619899b3403a68"
+  integrity sha512-M6f0Wbw3hvdfYbVpfGDXwjbRAcCgMRm5slWK6cU8BpotckLvBb0xoBvrhklG/ooz6ZTZfAc2e/EJ8GVhksdvpA==
+  dependencies:
+    axios "^0.21.2"
+
 "@cosmjs/json-rpc@0.28.13":
   version "0.28.13"
   resolved "https://registry.yarnpkg.com/@cosmjs/json-rpc/-/json-rpc-0.28.13.tgz#ff3f0c4a2f363b1a2c6779f8624a897e217fe297"

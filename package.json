@@ -13,6 +13,7 @@
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.28.13",
     "@cosmjs/encoding": "^0.28.13",
+    "@cosmjs/faucet-client": "^0.28.13",
     "@cosmjs/proto-signing": "^0.28.13",
     "@cosmjs/stargate": "^0.28.13",
     "abort-controller": "^3.0.0",

@@ -7,20 +7,37 @@ import { assertIsDeliverTxSuccess, coins } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
+import { FaucetClient } from "@cosmjs/faucet-client";
 
 global.fetch = fetch;
 global.AbortController = AbortController;
 
+
+
 /*
-    CosmJS
- */
-const mnemonic = process.env.MNEMONIC;
+CosmJS
+*/
+const prefix = process.env.PREFIX;
 const denom = process.env.DENOM;
-const prefix = { prefix: process.env.PREFIX };
-const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, prefix);
+const mnemonic = await (async () => {
+  if (process.env.MNEMONIC) {
+    return process.env.MNEMONIC;
+  } else {
+    let wallet = await DirectSecp256k1HdWallet.generate(12, { prefix });
+    const newMnemonic = wallet.mnemonic;
+    const [account] = await wallet.getAccounts();
+    const address = account.address;
+    console.log(`Generated new mnemonic: ${newMnemonic} and address ${address}`);
+    const faucet = new FaucetClient("http://5rh6rhqad1cgvei7qc96ia3n74.ingress.bigtractorplotting.com/");
+    await faucet.credit(address, denom);
+    return newMnemonic;
+  }
+})();
+
+const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
 const rpcEndpoint = process.env.ENDPOINT;
-const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, prefix);
+const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix });
 const nois_contract = process.env.NOIS_CONTRACT;
 
 /*
