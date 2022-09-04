@@ -17,6 +17,7 @@
     "@cosmjs/proto-signing": "^0.28.13",
     "@cosmjs/stargate": "^0.28.13",
     "abort-controller": "^3.0.0",
+    "chalk": "^5.0.1",
     "cosmjs-types": "^0.5.1",
     "dotenv": "^16.0.2",
     "drand-client": "^0.2.0",

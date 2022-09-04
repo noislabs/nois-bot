@@ -8,9 +8,15 @@ import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import { FaucetClient } from "@cosmjs/faucet-client";
+import chalk from "chalk";
 
 global.fetch = fetch;
 global.AbortController = AbortController;
+
+const errorColor = chalk.red;
+const warningColor = chalk.hex("#FFA500"); // Orange
+const successColor = chalk.green;
+const infoColor = chalk.gray;
 
 /*
 CosmJS
@@ -87,7 +93,7 @@ async function start() {
       };
       const gasPrice = GasPrice.fromString(`0.025${denom}`);
       const fee = calculateFee(700_000, gasPrice);
-      console.info(`Submitting drand round ${res.round} ...`);
+      console.info(infoColor(`Submitting drand round ${res.round} ...`));
       const result = await signer.signAndBroadcast(
         firstAccount.address,
         [sendMsg],
@@ -96,10 +102,12 @@ async function start() {
       );
       assertIsDeliverTxSuccess(result);
       console.info(
-        `Successfully submitted round ${res.round}. Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash}`,
+        successColor(
+          `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
+        ),
       );
     } catch (e) {
-      console.error(e.toString());
+      console.error(errorColor(e.toString()));
     }
   }
 }
