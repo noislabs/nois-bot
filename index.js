@@ -8,6 +8,7 @@ import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import { FaucetClient } from "@cosmjs/faucet-client";
+import { assert } from "@cosmjs/utils";
 import chalk from "chalk";
 
 global.fetch = fetch;
@@ -92,7 +93,8 @@ async function start() {
           msg: toUtf8(JSON.stringify(msg)),
         }),
       };
-      const gasPrice = GasPrice.fromString(`0.025${denom}`);
+      assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
+      const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
       const fee = calculateFee(700_000, gasPrice);
       console.info(infoColor(`Submitting drand round ${res.round} ...`));
       const result = await signer.signAndBroadcast(
