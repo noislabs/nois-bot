@@ -12,8 +12,6 @@ import { FaucetClient } from "@cosmjs/faucet-client";
 global.fetch = fetch;
 global.AbortController = AbortController;
 
-
-
 /*
 CosmJS
 */
@@ -28,7 +26,9 @@ const mnemonic = await (async () => {
     const [account] = await wallet.getAccounts();
     const address = account.address;
     console.log(`Generated new mnemonic: ${newMnemonic} and address ${address}`);
-    const faucet = new FaucetClient("http://5rh6rhqad1cgvei7qc96ia3n74.ingress.bigtractorplotting.com/");
+    const faucet = new FaucetClient(
+      "http://5rh6rhqad1cgvei7qc96ia3n74.ingress.bigtractorplotting.com/",
+    );
     await faucet.credit(address, denom);
     return newMnemonic;
   }
@@ -97,7 +97,9 @@ async function start() {
         `Insert randomness round: ${res.round}`,
       );
       assertIsDeliverTxSuccess(result);
-      console.info(`Successfully submitted round ${res.round}. Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash}`);
+      console.info(
+        `Successfully submitted round ${res.round}. Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash}`,
+      );
     } catch (e) {
       console.error(e.toString());
     }
