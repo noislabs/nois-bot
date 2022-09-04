@@ -59,6 +59,14 @@ const urls = [
   // ...
 ];
 
+const drandGenesis = 1595431050;
+const drandRoundLength = 30;
+
+// See TimeOfRound implementation: https://github.com/drand/drand/blob/eb36ba81e3f28c966f95bcd602f60e7ff8ef4c35/chain/time.go#L30-L33
+function timeOfRound(round) {
+  return drandGenesis + (round - 1) * drandRoundLength;
+}
+
 async function start() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
@@ -97,6 +105,7 @@ async function start() {
       const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
       const fee = calculateFee(700_000, gasPrice);
       console.info(infoColor(`Submitting drand round ${res.round} ...`));
+      const broadcastTime = Date.now() / 1000;
       const result = await signer.signAndBroadcast(
         firstAccount.address,
         [sendMsg],
@@ -107,6 +116,17 @@ async function start() {
       console.info(
         successColor(
           `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
+        ),
+      );
+      const publishTime = timeOfRound(res.round);
+      const { block } = await signer.forceGetTmClient().block(result.height);
+      const commitTime = block.header.time.getTime() / 1000; // seconds with fractional part
+      const diff = commitTime - publishTime;
+      console.info(
+        infoColor(
+          `Broadcast time (local): ${broadcastTime}; Drand publish time: ${publishTime}; Commit time: ${commitTime}; Diff: ${diff.toFixed(
+            3,
+          )}`,
         ),
       );
     } catch (e) {
