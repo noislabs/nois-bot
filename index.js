@@ -89,6 +89,7 @@ async function start() {
         amount: coins(25000, denom),
         gas: "1000000", // 1M
       };
+      console.info(`Submitting drand round ${res.round} ...`);
       const result = await signer.signAndBroadcast(
         firstAccount.address,
         [sendMsg],
@@ -96,8 +97,9 @@ async function start() {
         `Insert randomness round: ${res.round}`,
       );
       assertIsDeliverTxSuccess(result);
+      console.info(`Successfully submitted round ${res.round}. Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash}`);
     } catch (e) {
-      console.log(e);
+      console.error(e.toString());
     }
   }
 }
