@@ -6,6 +6,10 @@
   "author": "0xantman",
   "license": "Apache-2.0",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "prettier \"**/*.{js,ts,md}\" --write"
+  },
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.28.13",
     "@cosmjs/encoding": "^0.28.13",
@@ -17,5 +21,7 @@
     "drand-client": "^0.2.0",
     "node-fetch": "^3.2.10"
   },
-  "type": "module"
+  "devDependencies": {
+    "prettier": "^2.7.1"
+  }
 }
