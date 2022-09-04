@@ -59,7 +59,8 @@ const urls = [
 ];
 
 async function start() {
-  const drand_options = { chainHash };
+  // See https://github.com/drand/drand-client#api
+  const drand_options = { chainHash, disableBeaconVerification: true };
   const client = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
 
   for await (const res of client.watch()) {
