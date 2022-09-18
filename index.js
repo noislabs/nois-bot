@@ -1,4 +1,4 @@
-require("dotenv").config();
+import * as dotenv from "dotenv";
 import Client, { HTTP } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
@@ -9,6 +9,8 @@ import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { FaucetClient } from "@cosmjs/faucet-client";
 import { assert } from "@cosmjs/utils";
 import chalk from "chalk";
+
+dotenv.config();
 
 global.fetch = fetch;
 global.AbortController = AbortController;
