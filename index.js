@@ -4,8 +4,8 @@ import fetch from "node-fetch";
 import AbortController from "abort-controller";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess, calculateFee, coins, GasPrice } from "@cosmjs/stargate";
+import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
 import { FaucetClient } from "@cosmjs/faucet-client";
 import { assert } from "@cosmjs/utils";
 import chalk from "chalk";
@@ -74,6 +74,15 @@ function timeOfRound(round) {
   return drandGenesis + (round - 1) * drandRoundLength;
 }
 
+function printableCoin(coin) {
+  if (coin.denom?.startsWith("u")) {
+    const ticker = coin.denom.slice(1).toUpperCase();
+    return Decimal.fromAtomics(coin.amount ?? "0", 6).toString() + " " + ticker;
+  } else {
+    return coin.amount + coin.denom;
+  }
+}
+
 assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
 const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const fee = calculateFee(700_000, gasPrice);
@@ -129,10 +138,12 @@ async function main() {
         ),
       );
 
+      // Some seconds after the submission when things are idle, check and log
+      // the balance of the bot.
       setTimeout(() => {
         client.getBalance(firstAccount.address, denom).then(
           (balance) => {
-            console.log(infoColor(`Bot balance: ${balance.amount}${balance.denom}`));
+            console.log(infoColor(`Balance: ${printableCoin(balance)}`));
           },
           (error) => console.error(error),
         );
