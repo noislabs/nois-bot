@@ -1,3 +1,6 @@
 .idea
 node_modules
 .env
+
+# Let's use npm because yarn v1 is not maintained
+yarn.lock
