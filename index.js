@@ -24,6 +24,7 @@ const infoColor = chalk.gray;
 CosmJS
 */
 const prefix = process.env.PREFIX;
+/** The fee denom */
 const denom = process.env.DENOM;
 const mnemonic = await (async () => {
   if (process.env.MNEMONIC) {
@@ -50,7 +51,7 @@ const mnemonic = await (async () => {
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
 const rpcEndpoint = process.env.ENDPOINT;
-const signer = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix });
+const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix });
 const nois_contract = process.env.NOIS_CONTRACT;
 
 /*
@@ -80,9 +81,9 @@ const fee = calculateFee(700_000, gasPrice);
 async function main() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
-  const client = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
+  const drandClient = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
 
-  for await (const res of client.watch()) {
+  for await (const res of drandClient.watch()) {
     /*
             /// Example of response
             {
@@ -104,7 +105,7 @@ async function main() {
           previous_signature: res.previous_signature,
         },
       };
-      const result = await signer.execute(
+      const result = await client.execute(
         firstAccount.address,
         nois_contract,
         msg,
@@ -117,7 +118,7 @@ async function main() {
         ),
       );
       const publishTime = timeOfRound(res.round);
-      const { block } = await signer.forceGetTmClient().block(result.height);
+      const { block } = await client.forceGetTmClient().block(result.height);
       const commitTime = block.header.time.getTime() / 1000; // seconds with fractional part
       const diff = commitTime - publishTime;
       console.info(
@@ -127,6 +128,15 @@ async function main() {
           )}`,
         ),
       );
+
+      setTimeout(() => {
+        client.getBalance(firstAccount.address, denom).then(
+          (balance) => {
+            console.log(infoColor(`Bot balance: ${balance.amount}${balance.denom}`));
+          },
+          (error) => console.error(error),
+        );
+      }, 5_000);
     } catch (e) {
       console.error(errorColor(e.toString()));
     }
