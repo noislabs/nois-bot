@@ -77,7 +77,7 @@ assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
 const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const fee = calculateFee(700_000, gasPrice);
 
-async function start() {
+async function main() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
   const client = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
@@ -133,4 +133,13 @@ async function start() {
   }
 }
 
-start();
+main().then(
+  () => {
+    console.info("Done");
+    process.exit(0);
+  },
+  (error) => {
+    console.error(error);
+    process.exit(1);
+  },
+);
