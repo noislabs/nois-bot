@@ -34,9 +34,14 @@ const mnemonic = await (async () => {
     const address = account.address;
     console.log(`Generated new mnemonic: ${newMnemonic} and address ${address}`);
     const faucetEndpoint = process.env.FAUCET_ENDPOINT;
-    if (!faucetEndpoint) throw new Error("Either MNEMONIC of FAUCET_ENDPOINT need to be set.");
-    const faucet = new FaucetClient(faucetEndpoint);
-    await faucet.credit(address, denom);
+    if (faucetEndpoint) {
+      const faucet = new FaucetClient(faucetEndpoint);
+      await faucet.credit(address, denom);
+    } else {
+      console.warn(
+        "MNEMONIC and FAUCET_ENDPOINT are unset. Bot account has probably has no funds.",
+      );
+    }
     return newMnemonic;
   }
 })();
