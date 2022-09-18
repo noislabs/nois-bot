@@ -6,7 +6,6 @@ import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess, calculateFee, coins, GasPrice } from "@cosmjs/stargate";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { fromHex, toBase64, toUtf8 } from "@cosmjs/encoding";
-import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import { FaucetClient } from "@cosmjs/faucet-client";
 import { assert } from "@cosmjs/utils";
 import chalk from "chalk";
@@ -72,6 +71,10 @@ function timeOfRound(round) {
   return drandGenesis + (round - 1) * drandRoundLength;
 }
 
+assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
+const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
+const fee = calculateFee(700_000, gasPrice);
+
 async function start() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
@@ -90,6 +93,8 @@ async function start() {
             Use res.randomness to insert randomness
          */
     try {
+      console.info(infoColor(`Submitting drand round ${res.round} ...`));
+      const broadcastTime = Date.now() / 1000;
       const msg = {
         add_round: {
           round: res.round,
@@ -97,27 +102,13 @@ async function start() {
           previous_signature: res.previous_signature,
         },
       };
-
-      const sendMsg = {
-        typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
-        value: MsgExecuteContract.fromPartial({
-          sender: firstAccount.address,
-          contract: nois_contract,
-          msg: toUtf8(JSON.stringify(msg)),
-        }),
-      };
-      assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
-      const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
-      const fee = calculateFee(700_000, gasPrice);
-      console.info(infoColor(`Submitting drand round ${res.round} ...`));
-      const broadcastTime = Date.now() / 1000;
-      const result = await signer.signAndBroadcast(
+      const result = await signer.execute(
         firstAccount.address,
-        [sendMsg],
+        nois_contract,
+        msg,
         fee,
         `Insert randomness round: ${res.round}`,
       );
-      assertIsDeliverTxSuccess(result);
       console.info(
         successColor(
           `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
