@@ -165,15 +165,15 @@ async function main() {
 
       p1.then(
         () => console.log(infoColor("Broadcast 1 succeeded")),
-        (_err) => console.error("Broadcast 1 failed"),
+        (err) => console.warn(warningColor(`Broadcast 1 failed: ${err}`)),
       );
       p2?.then(
         () => console.log(infoColor("Broadcast 2 succeeded")),
-        (_err) => console.error("Broadcast 2 failed"),
+        (err) => console.warn(warningColor(`Broadcast 2 failed: ${err}`)),
       );
       p3?.then(
         () => console.log(infoColor("Broadcast 3 succeeded")),
-        (_err) => console.error("Broadcast 3 failed"),
+        (err) => console.warn(warningColor(`Broadcast 3 failed: ${err}`)),
       );
 
       const result = await Promise.any([p1, p2, p3].filter(isSet));
