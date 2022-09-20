@@ -98,7 +98,7 @@ function printableCoin(coin) {
 }
 
 function isSet(a) {
-  return a !== null && a !== undefined
+  return a !== null && a !== undefined;
 }
 
 const fee = calculateFee(700_000, gasPrice);
