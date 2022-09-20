@@ -68,6 +68,17 @@ const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
 const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, { prefix });
 
+let nextSignData = {
+  chainId: await client.getChainId(),
+  ...(await client.getSequence(firstAccount.address)),
+};
+
+function getNextSignData() {
+  let out = { ...nextSignData }; // copy values
+  nextSignData.sequence += 1;
+  return out;
+}
+
 /*
     DRAND
  */
@@ -144,7 +155,8 @@ async function main() {
         }),
       };
       const memo = `Insert randomness round: ${res.round}`;
-      const signed = await client.sign(firstAccount.address, [msg], fee, memo);
+      const signData = getNextSignData(); // Do this the manual way to save one query
+      const signed = await client.sign(firstAccount.address, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
 
       const p1 = client.broadcastTx(tx);
