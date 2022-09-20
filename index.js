@@ -23,12 +23,25 @@ const warningColor = chalk.hex("#FFA500"); // Orange
 const successColor = chalk.green;
 const infoColor = chalk.gray;
 
+// Required env vars
+assert(process.env.PREFIX, "PREFIX must be set");
+const prefix = process.env.PREFIX;
+assert(process.env.DENOM, "DENOM must be set");
+/** The fee denom */
+const denom = process.env.DENOM;
+assert(process.env.ENDPOINT, "ENDPOINT must be set");
+const endpoint = process.env.ENDPOINT;
+assert(process.env.NOIS_CONTRACT, "NOIS_CONTRACT must be set");
+const noisContract = process.env.NOIS_CONTRACT;
+assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
+const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
+// Optional env vars
+const endpoint2 = process.env.ENDPOINT2 || null;
+const endpoint3 = process.env.ENDPOINT3 || null;
+
 /*
 CosmJS
 */
-const prefix = process.env.PREFIX;
-/** The fee denom */
-const denom = process.env.DENOM;
 const mnemonic = await (async () => {
   if (process.env.MNEMONIC) {
     return process.env.MNEMONIC;
@@ -50,16 +63,6 @@ const mnemonic = await (async () => {
     return newMnemonic;
   }
 })();
-
-// Required env vars
-assert(process.env.ENDPOINT, "ENDPOINT must be set")
-const endpoint = process.env.ENDPOINT;
-assert(process.env.NOIS_CONTRACT, "NOIS_CONTRACT must be set")
-const noisContract = process.env.NOIS_CONTRACT;
-// Optional env vars
-const endpoint2 = process.env.ENDPOINT2 || null;
-const endpoint3 = process.env.ENDPOINT3 || null;
-
 
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
@@ -98,8 +101,6 @@ function isSet(a) {
   return a !== null && a !== undefined
 }
 
-assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
-const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const fee = calculateFee(700_000, gasPrice);
 
 async function main() {
