@@ -68,6 +68,8 @@ const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
 const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, { prefix });
 
+console.log(infoColor(`Bot address: ${firstAccount.address}`));
+
 let nextSignData = {
   chainId: await client.getChainId(),
   ...(await client.getSequence(firstAccount.address)),
