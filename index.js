@@ -2,12 +2,15 @@ import * as dotenv from "dotenv";
 import Client, { HTTP } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess, calculateFee, coins, GasPrice } from "@cosmjs/stargate";
+import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { FaucetClient } from "@cosmjs/faucet-client";
 import { assert } from "@cosmjs/utils";
+import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
+import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
 
 dotenv.config();
@@ -20,12 +23,25 @@ const warningColor = chalk.hex("#FFA500"); // Orange
 const successColor = chalk.green;
 const infoColor = chalk.gray;
 
+// Required env vars
+assert(process.env.PREFIX, "PREFIX must be set");
+const prefix = process.env.PREFIX;
+assert(process.env.DENOM, "DENOM must be set");
+/** The fee denom */
+const denom = process.env.DENOM;
+assert(process.env.ENDPOINT, "ENDPOINT must be set");
+const endpoint = process.env.ENDPOINT;
+assert(process.env.NOIS_CONTRACT, "NOIS_CONTRACT must be set");
+const noisContract = process.env.NOIS_CONTRACT;
+assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
+const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
+// Optional env vars
+const endpoint2 = process.env.ENDPOINT2 || null;
+const endpoint3 = process.env.ENDPOINT3 || null;
+
 /*
 CosmJS
 */
-const prefix = process.env.PREFIX;
-/** The fee denom */
-const denom = process.env.DENOM;
 const mnemonic = await (async () => {
   if (process.env.MNEMONIC) {
     return process.env.MNEMONIC;
@@ -50,9 +66,20 @@ const mnemonic = await (async () => {
 
 const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, { prefix });
 const [firstAccount] = await wallet.getAccounts();
-const rpcEndpoint = process.env.ENDPOINT;
-const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, wallet, { prefix });
-const nois_contract = process.env.NOIS_CONTRACT;
+const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, { prefix });
+
+console.log(infoColor(`Bot address: ${firstAccount.address}`));
+
+let nextSignData = {
+  chainId: await client.getChainId(),
+  ...(await client.getSequence(firstAccount.address)),
+};
+
+function getNextSignData() {
+  let out = { ...nextSignData }; // copy values
+  nextSignData.sequence += 1;
+  return out;
+}
 
 /*
     DRAND
@@ -83,14 +110,19 @@ function printableCoin(coin) {
   }
 }
 
-assert(process.env.GAS_PRICE, "GAS_PRICE must be set. E.g. '0.025unois'");
-const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
+function isSet(a) {
+  return a !== null && a !== undefined;
+}
+
 const fee = calculateFee(700_000, gasPrice);
 
 async function main() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
   const drandClient = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
+
+  let broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
+  let broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
 
   for await (const res of drandClient.watch()) {
     /*
@@ -108,19 +140,46 @@ async function main() {
       console.info(infoColor(`Submitting drand round ${res.round} ...`));
       const broadcastTime = Date.now() / 1000;
       const msg = {
-        add_round: {
-          round: res.round,
-          signature: res.signature,
-          previous_signature: res.previous_signature,
-        },
+        typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
+        value: MsgExecuteContract.fromPartial({
+          sender: firstAccount.address,
+          contract: noisContract,
+          msg: toUtf8(
+            JSON.stringify({
+              add_round: {
+                round: res.round,
+                signature: res.signature,
+                previous_signature: res.previous_signature,
+              },
+            }),
+          ),
+          funds: [],
+        }),
       };
-      const result = await client.execute(
-        firstAccount.address,
-        nois_contract,
-        msg,
-        fee,
-        `Insert randomness round: ${res.round}`,
+      const memo = `Insert randomness round: ${res.round}`;
+      const signData = getNextSignData(); // Do this the manual way to save one query
+      const signed = await client.sign(firstAccount.address, [msg], fee, memo, signData);
+      const tx = Uint8Array.from(TxRaw.encode(signed).finish());
+
+      const p1 = client.broadcastTx(tx);
+      const p2 = broadcaster2?.broadcastTx(tx);
+      const p3 = broadcaster3?.broadcastTx(tx);
+
+      p1.then(
+        () => console.log(infoColor("Broadcast 1 succeeded")),
+        (err) => console.warn(warningColor(`Broadcast 1 failed: ${err}`)),
       );
+      p2?.then(
+        () => console.log(infoColor("Broadcast 2 succeeded")),
+        (err) => console.warn(warningColor(`Broadcast 2 failed: ${err}`)),
+      );
+      p3?.then(
+        () => console.log(infoColor("Broadcast 3 succeeded")),
+        (err) => console.warn(warningColor(`Broadcast 3 failed: ${err}`)),
+      );
+
+      const result = await Promise.any([p1, p2, p3].filter(isSet));
+      assertIsDeliverTxSuccess(res);
       console.info(
         successColor(
           `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
@@ -145,7 +204,7 @@ async function main() {
           (balance) => {
             console.log(infoColor(`Balance: ${printableCoin(balance)}`));
           },
-          (error) => console.error(error),
+          (error) => console.warn(warningColor(`Error getting bot balance: ${error}`)),
         );
       }, 5_000);
     } catch (e) {

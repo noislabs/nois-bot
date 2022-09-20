@@ -20,6 +20,7 @@
     "@cosmjs/utils": "^0.29.0",
     "abort-controller": "^3.0.0",
     "chalk": "^5.0.1",
+    "cosmjs-types": "^0.5.1",
     "dotenv": "^16.0.2",
     "drand-client": "^0.2.0",
     "node-fetch": "^3.2.10"
