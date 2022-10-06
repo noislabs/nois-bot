@@ -89,6 +89,7 @@ async function resetSignData() {
     chainId: await client.getChainId(),
     ...(await client.getSequence(firstAccount.address)),
   }
+  console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
 
 /*
@@ -225,7 +226,7 @@ async function main() {
 
       // In case of an error, reset the chain ID and sequence to the on-chain values.
       // If this also fails, the process is killed since the error here is not caught anymore.
-      console.info("Resetting sign data ...")
+      console.info(infoColor("Resetting sign data ..."))
       await resetSignData();
     }
   }
