@@ -71,14 +71,25 @@ const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, {
 console.log(infoColor(`Bot address: ${firstAccount.address}`));
 
 let nextSignData = {
-  chainId: await client.getChainId(),
-  ...(await client.getSequence(firstAccount.address)),
+  chainId: "",
+  accountNumber: NaN,
+  sequence: NaN,
 };
 
 function getNextSignData() {
   let out = { ...nextSignData }; // copy values
   nextSignData.sequence += 1;
   return out;
+}
+
+// Needed in case an error happened to ensure sequence is in sync
+// with chain
+async function resetSignData() {
+  nextSignData = {
+    chainId: await client.getChainId(),
+    ...(await client.getSequence(firstAccount.address)),
+  }
+  console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
 
 /*
@@ -123,6 +134,9 @@ async function main() {
 
   let broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
   let broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
+
+  // Initialize sign data
+  await resetSignData();
 
   for await (const res of drandClient.watch()) {
     /*
@@ -209,6 +223,11 @@ async function main() {
       }, 5_000);
     } catch (e) {
       console.error(errorColor(e.toString()));
+
+      // In case of an error, reset the chain ID and sequence to the on-chain values.
+      // If this also fails, the process is killed since the error here is not caught anymore.
+      console.info(infoColor("Resetting sign data ..."))
+      await resetSignData();
     }
   }
 }
