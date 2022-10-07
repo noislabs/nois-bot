@@ -12,6 +12,7 @@ import { assert } from "@cosmjs/utils";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
+import { shuffle } from "./shuffle.js";
 
 dotenv.config();
 
@@ -106,6 +107,8 @@ const urls = [
   "https://drand.cloudflare.com",
   // ...
 ];
+// Shuffle enpoints to reduce likelyhood of two bots ending up with the same endpoint
+shuffle(urls);
 
 const drandGenesis = 1595431050;
 const drandRoundLength = 30;
