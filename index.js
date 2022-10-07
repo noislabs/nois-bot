@@ -212,7 +212,7 @@ async function main() {
       );
 
       const result = await Promise.any([p1, p2, p3].filter(isSet));
-      assertIsDeliverTxSuccess(res);
+      assertIsDeliverTxSuccess(result);
       console.info(
         successColor(
           `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
