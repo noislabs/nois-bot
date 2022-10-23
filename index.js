@@ -131,7 +131,7 @@ function isSet(a) {
   return a !== null && a !== undefined;
 }
 
-const fee = calculateFee(800_000, gasPrice);
+const fee = calculateFee(750_000, gasPrice);
 
 async function main() {
   // See https://github.com/drand/drand-client#api
