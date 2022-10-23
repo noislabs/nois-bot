@@ -3,7 +3,7 @@ import Client, { HTTP } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
 import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { assertIsDeliverTxSuccess, calculateFee, coins, GasPrice } from "@cosmjs/stargate";
+import { assertIsDeliverTxSuccess, calculateFee, logs, GasPrice } from "@cosmjs/stargate";
 import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
@@ -133,6 +133,14 @@ function isSet(a) {
 
 const fee = calculateFee(750_000, gasPrice);
 
+export function ibcPacketsSent(resultLogs) {
+  const allEvents = resultLogs.flatMap((log) => log.events);
+  const packetsEvents = allEvents.filter((e) => e.type === "send_packet");
+  const attributes = packetsEvents.flatMap((e) => e.attributes);
+  const packetsSentCount = attributes.filter((a) => a.key === "packet_sequence").length;
+  return packetsSentCount;
+}
+
 async function main() {
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
@@ -213,9 +221,11 @@ async function main() {
 
       const result = await Promise.any([p1, p2, p3].filter(isSet));
       assertIsDeliverTxSuccess(result);
+      const parsedLogs = logs.parseRawLog(result.rawLog);
+      const jobs = ibcPacketsSent(parsedLogs);
       console.info(
         successColor(
-          `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Transaction: ${result.transactionHash})`,
+          `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Jobs processed: ${jobs}; Transaction: ${result.transactionHash})`,
         ),
       );
       const publishTime = timeOfRound(res.round);
