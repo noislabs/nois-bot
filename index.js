@@ -7,7 +7,6 @@ import { assertIsDeliverTxSuccess, calculateFee, logs, GasPrice } from "@cosmjs/
 import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { FaucetClient } from "@cosmjs/faucet-client";
 import { assert } from "@cosmjs/utils";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
@@ -52,15 +51,6 @@ const mnemonic = await (async () => {
     const [account] = await wallet.getAccounts();
     const address = account.address;
     console.log(`Generated new mnemonic: ${newMnemonic} and address ${address}`);
-    const faucetEndpoint = process.env.FAUCET_ENDPOINT;
-    if (faucetEndpoint) {
-      const faucet = new FaucetClient(faucetEndpoint);
-      await faucet.credit(address, denom);
-    } else {
-      console.warn(
-        "MNEMONIC and FAUCET_ENDPOINT are unset. Bot account has probably has no funds.",
-      );
-    }
     return newMnemonic;
   }
 })();
