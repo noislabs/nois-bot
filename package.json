@@ -11,12 +11,12 @@
     "format": "prettier \"**/*.{js,ts,md}\" --write"
   },
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.29.0",
-    "@cosmjs/encoding": "^0.29.0",
-    "@cosmjs/math": "^0.29.0",
-    "@cosmjs/proto-signing": "^0.29.0",
-    "@cosmjs/stargate": "^0.29.0",
-    "@cosmjs/utils": "^0.29.0",
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
+    "@cosmjs/encoding": "^0.29.5",
+    "@cosmjs/math": "^0.29.5",
+    "@cosmjs/proto-signing": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
+    "@cosmjs/utils": "^0.29.5",
     "abort-controller": "^3.0.0",
     "chalk": "^5.0.1",
     "cosmjs-types": "^0.5.1",
@@ -25,6 +25,6 @@
     "node-fetch": "^3.2.10"
   },
   "devDependencies": {
-    "prettier": "^2.7.1"
+    "prettier": "^2.8.2"
   }
 }
