@@ -7,7 +7,7 @@ import { assertIsDeliverTxSuccess, calculateFee, logs, GasPrice } from "@cosmjs/
 import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { assert } from "@cosmjs/utils";
+import { assert, sleep } from "@cosmjs/utils";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
@@ -61,8 +61,9 @@ const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, {
   prefix,
   gasPrice,
 });
+const botAddress = firstAccount.address;
 
-console.log(infoColor(`Bot address: ${firstAccount.address}`));
+console.log(infoColor(`Bot address: ${botAddress}`));
 
 let nextSignData = {
   chainId: "",
@@ -81,7 +82,7 @@ function getNextSignData() {
 async function resetSignData() {
   nextSignData = {
     chainId: await client.getChainId(),
-    ...(await client.getSequence(firstAccount.address)),
+    ...(await client.getSequence(botAddress)),
   };
   console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
@@ -143,7 +144,7 @@ async function main() {
   if (moniker) {
     console.info(infoColor("Registering this bot ..."));
     await client.execute(
-      firstAccount.address,
+      botAddress,
       noisContract,
       {
         register_bot: { moniker: moniker },
@@ -151,6 +152,18 @@ async function main() {
       "auto",
     );
   }
+
+  // We need a bit of a delay between the bot registration tx and the
+  // sign data query to ensure the sequence is updated.
+  await Promise.all([
+    sleep(500), // the min waiting time
+    (async function () {
+      const { listed } = await client.queryContractSmart(noisContract, {
+        is_allow_listed: { bot: botAddress },
+      });
+      console.info(infoColor(`Bot allow listed for rewards: ${listed}`));
+    })(),
+  ]);
 
   // Initialize local sign data
   await resetSignData();
@@ -173,7 +186,7 @@ async function main() {
       const msg = {
         typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
         value: MsgExecuteContract.fromPartial({
-          sender: firstAccount.address,
+          sender: botAddress,
           contract: noisContract,
           msg: toUtf8(
             JSON.stringify({
@@ -189,7 +202,7 @@ async function main() {
       };
       const memo = `Insert randomness round: ${res.round}`;
       const signData = getNextSignData(); // Do this the manual way to save one query
-      const signed = await client.sign(firstAccount.address, [msg], fee, memo, signData);
+      const signed = await client.sign(botAddress, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
 
       const p1 = client.broadcastTx(tx);
@@ -233,7 +246,7 @@ async function main() {
       // Some seconds after the submission when things are idle, check and log
       // the balance of the bot.
       setTimeout(() => {
-        client.getBalance(firstAccount.address, denom).then(
+        client.getBalance(botAddress, denom).then(
           (balance) => {
             console.log(infoColor(`Balance: ${printableCoin(balance)}`));
           },
