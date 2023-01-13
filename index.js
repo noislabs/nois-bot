@@ -61,8 +61,9 @@ const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, {
   prefix,
   gasPrice,
 });
+const botAddress = firstAccount.address;
 
-console.log(infoColor(`Bot address: ${firstAccount.address}`));
+console.log(infoColor(`Bot address: ${botAddress}`));
 
 let nextSignData = {
   chainId: "",
@@ -81,7 +82,7 @@ function getNextSignData() {
 async function resetSignData() {
   nextSignData = {
     chainId: await client.getChainId(),
-    ...(await client.getSequence(firstAccount.address)),
+    ...(await client.getSequence(botAddress)),
   };
   console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
@@ -143,7 +144,7 @@ async function main() {
   if (moniker) {
     console.info(infoColor("Registering this bot ..."));
     await client.execute(
-      firstAccount.address,
+      botAddress,
       noisContract,
       {
         register_bot: { moniker: moniker },
@@ -173,7 +174,7 @@ async function main() {
       const msg = {
         typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
         value: MsgExecuteContract.fromPartial({
-          sender: firstAccount.address,
+          sender: botAddress,
           contract: noisContract,
           msg: toUtf8(
             JSON.stringify({
@@ -189,7 +190,7 @@ async function main() {
       };
       const memo = `Insert randomness round: ${res.round}`;
       const signData = getNextSignData(); // Do this the manual way to save one query
-      const signed = await client.sign(firstAccount.address, [msg], fee, memo, signData);
+      const signed = await client.sign(botAddress, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
 
       const p1 = client.broadcastTx(tx);
@@ -233,7 +234,7 @@ async function main() {
       // Some seconds after the submission when things are idle, check and log
       // the balance of the bot.
       setTimeout(() => {
-        client.getBalance(firstAccount.address, denom).then(
+        client.getBalance(botAddress, denom).then(
           (balance) => {
             console.log(infoColor(`Balance: ${printableCoin(balance)}`));
           },
