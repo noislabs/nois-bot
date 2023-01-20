@@ -133,6 +133,10 @@ export function ibcPacketsSent(resultLogs) {
 }
 
 async function main() {
+  console.info(infoColor(`Connected to ENDPOINT ${endpoint}.`));
+  console.info(infoColor(`Chain ID: ${await client.getChainId()}`));
+  console.info(infoColor(`Height: ${await client.getHeight()}`));
+
   // See https://github.com/drand/drand-client#api
   const drand_options = { chainHash, disableBeaconVerification: true };
   const drandClient = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
