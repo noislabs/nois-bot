@@ -11,6 +11,7 @@ import { assert, sleep } from "@cosmjs/utils";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
+import { drandChainHash, publishedSince, drandUrls, timeOfRound } from "./drand.js";
 import { shuffle } from "./shuffle.js";
 
 dotenv.config();
@@ -87,27 +88,9 @@ async function resetSignData() {
   console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
 
-/*
-    DRAND
- */
-const chainHash = process.env.CHAIN_HASH; // (hex encoded)
-const urls = [
-  "https://api.drand.sh",
-  "https://api2.drand.sh",
-  "https://api3.drand.sh",
-  "https://drand.cloudflare.com",
-  // ...
-];
+
 // Shuffle enpoints to reduce likelyhood of two bots ending up with the same endpoint
-shuffle(urls);
-
-const drandGenesis = 1595431050;
-const drandRoundLength = 30;
-
-// See TimeOfRound implementation: https://github.com/drand/drand/blob/eb36ba81e3f28c966f95bcd602f60e7ff8ef4c35/chain/time.go#L30-L33
-function timeOfRound(round) {
-  return drandGenesis + (round - 1) * drandRoundLength;
-}
+shuffle(drandUrls);
 
 function printableCoin(coin) {
   if (coin.denom?.startsWith("u")) {
@@ -138,8 +121,8 @@ async function main() {
   console.info(infoColor(`Height: ${await client.getHeight()}`));
 
   // See https://github.com/drand/drand-client#api
-  const drand_options = { chainHash, disableBeaconVerification: true };
-  const drandClient = await Client.wrap(HTTP.forURLs(urls, chainHash), drand_options);
+  const drandOptions = { chainHash: drandChainHash, disableBeaconVerification: true };
+  const drandClient = await Client.wrap(HTTP.forURLs(drandUrls, drandChainHash), drandOptions);
 
   let broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
   let broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
@@ -185,7 +168,8 @@ async function main() {
             Use res.randomness to insert randomness
          */
     try {
-      console.info(infoColor(`Submitting drand round ${res.round} ...`));
+      const sincePublish = publishedSince(res.round);
+      console.info(infoColor(`Received drand round ${res.round} after ${sincePublish.toFixed(3)}s. Submitting ...`));
       const broadcastTime = Date.now() / 1000;
       const msg = {
         typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",

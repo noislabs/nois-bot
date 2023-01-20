@@ -1,4 +1,5 @@
 FROM  node:latest
+COPY drand.js /opt/bot/drand.js
 COPY index.js /opt/bot/index.js
 COPY shuffle.js /opt/bot/shuffle.js
 COPY package.json /opt/bot/package.json
