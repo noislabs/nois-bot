@@ -13,6 +13,7 @@ import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
 import { drandChainHash, publishedSince, drandUrls, timeOfRound } from "./drand.js";
 import { shuffle } from "./shuffle.js";
+import { group, isMyGroup } from "./group.js";
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ const client = await SigningCosmWasmClient.connectWithSigner(endpoint, wallet, {
 const botAddress = firstAccount.address;
 
 console.log(infoColor(`Bot address: ${botAddress}`));
+console.log(infoColor(`Group: ${group(botAddress)}`));
 
 let nextSignData = {
   chainId: "",
@@ -169,6 +171,12 @@ async function main() {
     try {
       const sincePublish = publishedSince(res.round);
       console.info(infoColor(`Received drand round ${res.round} after ${sincePublish.toFixed(3)}s. Submitting ...`));
+
+      if (!isMyGroup(botAddress, res.round)) {
+        console.info(infoColor(`Not my turn, skipping.`));
+        continue;
+      }
+
       const broadcastTime = Date.now() / 1000;
       const msg = {
         typeUrl: "/cosmwasm.wasm.v1.MsgExecuteContract",
