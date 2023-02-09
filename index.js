@@ -47,7 +47,7 @@ const mnemonic = await (async () => {
   if (process.env.MNEMONIC) {
     return process.env.MNEMONIC;
   } else {
-    let wallet = await DirectSecp256k1HdWallet.generate(12, { prefix });
+    const wallet = await DirectSecp256k1HdWallet.generate(12, { prefix });
     const newMnemonic = wallet.mnemonic;
     const [account] = await wallet.getAccounts();
     const address = account.address;
@@ -88,7 +88,6 @@ async function resetSignData() {
   console.log(infoColor(`Sign data set to: ${JSON.stringify(nextSignData)}`));
 }
 
-
 // Shuffle enpoints to reduce likelyhood of two bots ending up with the same endpoint
 shuffle(drandUrls);
 
@@ -124,8 +123,8 @@ async function main() {
   const drandOptions = { chainHash: drandChainHash, disableBeaconVerification: true };
   const drandClient = await Client.wrap(HTTP.forURLs(drandUrls, drandChainHash), drandOptions);
 
-  let broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
-  let broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
+  const broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
+  const broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
 
   const moniker = process.env.MONIKER;
   if (moniker) {
