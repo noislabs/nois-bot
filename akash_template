@@ -6,13 +6,11 @@ services:
     image: noislabs/nois-bot:latest
     env:
       #TEST MNEMONIC nothing important
-      - MNEMONIC=mad hair then dose pioneer artist top lazy athlete cargo earn valve sun coast armor noble please deposit virus guard snap mammal farm rigid 
+      - MNEMONIC=mad hair then dose pioneer artist top lazy athlete cargo earn valve sun coast armor noble please deposit virus guard snap mammal farm rigid
       - PREFIX=nois
       - DENOM=unois
       - NOIS_CONTRACT=nois17p9rzwnnfxcjp32un9ug7yhhzgtkhvl9jfksztgw5uh69wac2pgsve244d
-      - CHAIN_HASH=8990e7a9aaed2ffed73dbd7092123d6f289930540d7651336225dc172e51b2ce
-      - ENDPOINT=http://6553qqb75pb27eg2ff5lqvrpso.ingress.akash.pro:80 
-      
+      - ENDPOINT=http://6553qqb75pb27eg2ff5lqvrpso.ingress.akash.pro:80
     expose:
       - port: 8000
         as: 80

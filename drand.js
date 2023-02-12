@@ -1,4 +1,7 @@
+// In drand-client v1.0.0 the chain hash will become optional.
+// For now we hardcode it here.
 export const drandChainHash = "8990e7a9aaed2ffed73dbd7092123d6f289930540d7651336225dc172e51b2ce"; // (hex encoded)
+
 export const drandUrls = [
   "https://api.drand.sh",
   "https://api2.drand.sh",
