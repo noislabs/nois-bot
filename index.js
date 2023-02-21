@@ -40,6 +40,8 @@ const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 // Optional env vars
 const endpoint2 = process.env.ENDPOINT2 || null;
 const endpoint3 = process.env.ENDPOINT3 || null;
+// Constants
+const gasLimit = 650_000;
 
 /*
 CosmJS
@@ -105,8 +107,6 @@ function printableCoin(coin) {
 function isSet(a) {
   return a !== null && a !== undefined;
 }
-
-const fee = calculateFee(750_000, gasPrice);
 
 export function ibcPacketsSent(resultLogs) {
   const allEvents = resultLogs.flatMap((log) => log.events);
@@ -196,6 +196,7 @@ async function main() {
         }),
       };
       const memo = `Insert randomness round: ${res.round}`;
+      const fee = calculateFee(gasLimit, gasPrice);
       const signData = getNextSignData(); // Do this the manual way to save one query
       const signed = await client.sign(botAddress, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
