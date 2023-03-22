@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import Client, { HTTP } from "drand-client";
+import { FastestNodeClient, watch } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
 import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
@@ -11,7 +11,7 @@ import { assert, sleep } from "@cosmjs/utils";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx.js";
 import { MsgExecuteContract } from "cosmjs-types/cosmwasm/wasm/v1/tx.js";
 import chalk from "chalk";
-import { drandChainHash, publishedSince, drandUrls, timeOfRound } from "./drand.js";
+import { drandOptions, publishedSince, drandUrls, timeOfRound } from "./drand.js";
 import { shuffle } from "./shuffle.js";
 import { group, isMyGroup } from "./group.js";
 
@@ -121,10 +121,6 @@ async function main() {
   console.info(infoColor(`Chain ID: ${await client.getChainId()}`));
   console.info(infoColor(`Height: ${await client.getHeight()}`));
 
-  // See https://github.com/drand/drand-client#api
-  const drandOptions = { chainHash: drandChainHash, disableBeaconVerification: true };
-  const drandClient = await Client.wrap(HTTP.forURLs(drandUrls, drandChainHash), drandOptions);
-
   const broadcaster2 = endpoint2 ? await CosmWasmClient.connect(endpoint2) : null;
   const broadcaster3 = endpoint3 ? await CosmWasmClient.connect(endpoint3) : null;
 
@@ -156,25 +152,25 @@ async function main() {
   // Initialize local sign data
   await resetSignData();
 
-  for await (const res of drandClient.watch()) {
+  const fastestNodeClient = new FastestNodeClient(drandUrls, drandOptions);
+  fastestNodeClient.start();
+  const abortController = new AbortController();
+  for await (const beacon of watch(fastestNodeClient, abortController)) {
     /*
-            /// Example of response
-            {
-              round: 2219943,
-              randomness: 'f53a54f5...',
-              signature: '8072acccd...',
-              previous_signature: '98670f6c6...'
-            }
-
-            Use res.randomness to insert randomness
-         */
+        /// Example of response
+        {
+          round: 2219943,
+          randomness: 'f53a54f5...',
+          signature: '8072acccd...',
+        }
+    */
     try {
-      const sincePublish = publishedSince(res.round);
-      console.info(infoColor(`Received drand round ${res.round} after ${sincePublish.toFixed(3)}s. Submitting ...`));
-
-      if (!isMyGroup(botAddress, res.round)) {
-        console.info(infoColor(`Not my turn, skipping.`));
+      const delay = publishedSince(beacon.round);
+      if (!isMyGroup(botAddress, beacon.round)) {
+        console.log(`Got beacon #${beacon.round} after ${delay}ms. Skipping.`);
         continue;
+      } else {
+        console.log(`Got beacon #${beacon.round} after ${delay}ms.`);
       }
 
       const broadcastTime = Date.now() / 1000;
@@ -186,16 +182,15 @@ async function main() {
           msg: toUtf8(
             JSON.stringify({
               add_round: {
-                round: res.round,
-                signature: res.signature,
-                previous_signature: res.previous_signature,
+                round: beacon.round,
+                signature: beacon.signature,
               },
             }),
           ),
           funds: [],
         }),
       };
-      const memo = `Insert randomness round: ${res.round}`;
+      const memo = `Insert randomness round: ${beacon.round}`;
       const fee = calculateFee(gasLimit, gasPrice);
       const signData = getNextSignData(); // Do this the manual way to save one query
       const signed = await client.sign(botAddress, [msg], fee, memo, signData);
@@ -224,10 +219,10 @@ async function main() {
       const jobs = ibcPacketsSent(parsedLogs);
       console.info(
         successColor(
-          `✔ Round ${res.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Jobs processed: ${jobs}; Transaction: ${result.transactionHash})`,
+          `✔ Round ${beacon.round} (Gas: ${result.gasUsed}/${result.gasWanted}; Jobs processed: ${jobs}; Transaction: ${result.transactionHash})`,
         ),
       );
-      const publishTime = timeOfRound(res.round);
+      const publishTime = timeOfRound(beacon.round);
       const { block } = await client.forceGetTmClient().block(result.height);
       const commitTime = block.header.time.getTime() / 1000; // seconds with fractional part
       const diff = commitTime - publishTime;
