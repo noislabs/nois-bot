@@ -22,7 +22,7 @@
     "chalk": "^5.0.1",
     "cosmjs-types": "^0.5.1",
     "dotenv": "^16.0.2",
-    "drand-client": "^0.2.0",
+    "drand-client": "^1.0.0",
     "node-fetch": "^3.2.10"
   },
   "devDependencies": {
