@@ -41,7 +41,7 @@ const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const endpoint2 = process.env.ENDPOINT2 || null;
 const endpoint3 = process.env.ENDPOINT3 || null;
 // Constants
-const gasLimit = 650_000;
+const gasLimit = 600_000;
 
 /*
 CosmJS
