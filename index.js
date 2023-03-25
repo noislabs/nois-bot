@@ -2,9 +2,8 @@ import * as dotenv from "dotenv";
 import { FastestNodeClient, watch } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
-import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient, SigningCosmWasmClient, toBinary } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess, calculateFee, logs, GasPrice } from "@cosmjs/stargate";
-import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { assert, sleep } from "@cosmjs/utils";
@@ -178,14 +177,12 @@ async function main() {
         value: MsgExecuteContract.fromPartial({
           sender: botAddress,
           contract: noisContract,
-          msg: toUtf8(
-            JSON.stringify({
-              add_round: {
-                round: beacon.round,
-                signature: beacon.signature,
-              },
-            }),
-          ),
+          msg: toBinary({
+            add_round: {
+              round: beacon.round,
+              signature: beacon.signature,
+            },
+          }),
           funds: [],
         }),
       };
