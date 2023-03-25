@@ -41,7 +41,8 @@ const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const endpoint2 = process.env.ENDPOINT2 || null;
 const endpoint3 = process.env.ENDPOINT3 || null;
 // Constants
-const gasLimit = 600_000;
+const gasLimitRegister = 200_000;
+const gasLimitAddBeacon = 600_000;
 
 /*
 CosmJS
@@ -130,10 +131,8 @@ async function main() {
     await client.execute(
       botAddress,
       noisContract,
-      {
-        register_bot: { moniker: moniker },
-      },
-      "auto",
+      { register_bot: { moniker: moniker } },
+      calculateFee(gasLimitRegister, gasPrice),
     );
   }
 
@@ -191,7 +190,7 @@ async function main() {
         }),
       };
       const memo = `Insert randomness round: ${beacon.round}`;
-      const fee = calculateFee(gasLimit, gasPrice);
+      const fee = calculateFee(gasLimitAddBeacon, gasPrice);
       const signData = getNextSignData(); // Do this the manual way to save one query
       const signed = await client.sign(botAddress, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
