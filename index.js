@@ -186,7 +186,7 @@ async function main() {
           funds: [],
         }),
       };
-      const memo = `Insert randomness round: ${beacon.round}`;
+      const memo = `Add round: ${beacon.round}`;
       const fee = calculateFee(gasLimitAddBeacon, gasPrice);
       const signData = getNextSignData(); // Do this the manual way to save one query
       const signed = await client.sign(botAddress, [msg], fee, memo, signData);
