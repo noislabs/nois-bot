@@ -2,9 +2,8 @@ import * as dotenv from "dotenv";
 import { FastestNodeClient, watch } from "drand-client";
 import fetch from "node-fetch";
 import AbortController from "abort-controller";
-import { CosmWasmClient, SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient, SigningCosmWasmClient, toBinary } from "@cosmjs/cosmwasm-stargate";
 import { assertIsDeliverTxSuccess, calculateFee, logs, GasPrice } from "@cosmjs/stargate";
-import { toUtf8 } from "@cosmjs/encoding";
 import { Decimal } from "@cosmjs/math";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { assert, sleep } from "@cosmjs/utils";
@@ -41,7 +40,8 @@ const gasPrice = GasPrice.fromString(process.env.GAS_PRICE);
 const endpoint2 = process.env.ENDPOINT2 || null;
 const endpoint3 = process.env.ENDPOINT3 || null;
 // Constants
-const gasLimit = 600_000;
+const gasLimitRegister = 200_000;
+const gasLimitAddBeacon = 600_000;
 
 /*
 CosmJS
@@ -130,10 +130,8 @@ async function main() {
     await client.execute(
       botAddress,
       noisContract,
-      {
-        register_bot: { moniker: moniker },
-      },
-      "auto",
+      { register_bot: { moniker: moniker } },
+      calculateFee(gasLimitRegister, gasPrice),
     );
   }
 
@@ -179,19 +177,17 @@ async function main() {
         value: MsgExecuteContract.fromPartial({
           sender: botAddress,
           contract: noisContract,
-          msg: toUtf8(
-            JSON.stringify({
-              add_round: {
-                round: beacon.round,
-                signature: beacon.signature,
-              },
-            }),
-          ),
+          msg: toBinary({
+            add_round: {
+              round: beacon.round,
+              signature: beacon.signature,
+            },
+          }),
           funds: [],
         }),
       };
-      const memo = `Insert randomness round: ${beacon.round}`;
-      const fee = calculateFee(gasLimit, gasPrice);
+      const memo = `Add round: ${beacon.round}`;
+      const fee = calculateFee(gasLimitAddBeacon, gasPrice);
       const signData = getNextSignData(); // Do this the manual way to save one query
       const signed = await client.sign(botAddress, [msg], fee, memo, signData);
       const tx = Uint8Array.from(TxRaw.encode(signed).finish());
