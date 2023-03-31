@@ -10,7 +10,7 @@ sudo apt update && sudo apt upgrade -y && sudo reboot
 sudo apt install -y git htop joe jq \
   && wget -O nodejs.deb https://deb.nodesource.com/node_16.x/pool/main/n/nodejs/nodejs_16.17.1-deb-1nodesource1_amd64.deb \
   && sudo dpkg -i nodejs.deb \
-  && npm install pm2 -g
+  && sudo npm install pm2 -g
 
 git clone https://github.com/noislabs/nois-bot.git \
   && cd nois-bot \
