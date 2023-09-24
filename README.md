@@ -1,3 +1,11 @@
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
+This repository is unmaintained.
+Starting with September 2023, all development happens in the [bot2](https://github.com/noislabs/bot2) implementation.
+This means especially fast randomness will be implemented over there, making the old bot incompatible very soon.
+
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
 # NOIS BOT
 
 ### Beta test version
